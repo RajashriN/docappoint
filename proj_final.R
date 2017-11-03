@@ -15,14 +15,6 @@ summary(medical)
 attach(medical)
 
 
-##No.show <- factor(make.names(No.show))
-##To check whether we have a column with N/A
-#3
-##numIndex<- sapply(medical, is.numeric)
-##summary(medical[,numIndex])
-##medical$No.show<-as.factor(medical$No.show)
-##medical$Gender<-as.factor(medical$Gender)
-##medical$Scholarship<-as.factor(medical$Scholarship)
 
 Train <- createDataPartition(medical$SMS_received, p=0.7, list=FALSE)
 training <- medical[ Train, ]
@@ -33,17 +25,8 @@ model1<- train(No.show ~ Gender+Age+SMS_received, data = training,method = "glm"
  
 model1               
 
-#Age+SMS_received+Gender
-##No.show vs age-0.773
-##No.show vs age+scholar+sms_recieved-0.75049
-##No.show vs age+scholar+sms_recieved+gender - 0.74
-##No.show vs age+sms+gender -0.742,this is the best amongst all
-##No
 
-model1
-
-
-varImp(model1)##sms_received is having the highest score
+varImp(model1)
 
 pred = predict(model1, newdata=testing)
 confusionMatrix(data=pred, testing$No.show)
