@@ -1,0 +1,197 @@
+---
+title       : Patient Show up prediction  
+subtitle    : 
+author      : demo 
+job         : Data Mining
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+---
+
+ 
+
+
+* / >1.Predictions using ML algorithms
+* / >2.Data Visualization
+
+
+---
+```{r}
+library(caret)
+Train <- createDataPartition(medical$SMS_received, p=0.7, list=FALSE)
+training <- medical[ Train, ]
+testing <- medical[ -Train, ]
+```
+
+
+
+
+---
+```{r}
+library(caret)
+model1<- train(No.show ~ Gender+Age+SMS_received, data = training,method = "glm",family="binomial") 
+model1 
+
+```
+
+
+
+
+
+---
+
+```{r}
+library(caret)
+varImp(model1)##sms_received is having the highest score
+pred = predict(model1, newdata=testing)
+confusionMatrix(data=pred, testing$No.show)
+
+```
+
+
+
+
+---
+##Using Rpart
+
+
+```{r}
+library(rpart)
+model2<-rpart(formula = No.show ~ Age +  Alcoholism + 
+        Scholarship +  SMS_received, data = training, method = "class", maxdepth = 4, minsplit = 2, minbucket = 1, cp = -1)
+```
+
+
+
+
+---
+
+
+```{r}
+library(rpart)
+testPred <- predict(model2, newdata = testing)
+predictability <- sum(testPred == testing$No.show)/ length(testing$No.show)*100
+predictability
+```
+
+
+
+---
+
+
+```{r}
+library(rpart)
+rpart.plot::rpart.plot(model2, type = 2, fallen.leaves = FALSE, extra = 4)
+```
+
+
+
+
+---
+```{r}
+library(MASS)
+library(nnet)
+library(caret)
+rdfit<-train(No.show ~ SMS_received+Age+Gender,data = training,method = "lda",family = "binomial")
+
+```
+
+
+
+
+
+---
+```{r}
+library(caret)
+
+rdaClasses <- predict(rdfit, newdata = testing)
+ confusionMatrix(rdaClasses, testing$No.show)
+```
+
+
+
+
+---
+```{r}
+library(caret)
+library(nnet)
+knn_model<-train(No.show ~ SMS_received+Age+Handcap+Alcoholism,data = training,method = "knn")
+knn_model
+```
+ 
+
+
+
+
+---
+
+```{r}
+library(caret)
+ knnpred <- predict(knn_model, newdata = testing)
+ confusionMatrix(knnpred, testing$No.show)
+```
+
+
+
+
+
+---
+
+
+```{r}
+library(dplyr)
+library(ggthemes)
+library(ggplot2)
+##depending on the age and gender what is the status 
+ggplot(data = medical, aes(x = Age, colour = Gender))+
+   geom_density()+
+   geom_vline(xintercept = 16, linetype = 'longdash')+
+   geom_vline(xintercept = 68, linetype = 'longdash')+
+   theme_igray()+
+   ggtitle('Density of Age by Gender')
+```
+
+
+
+---
+
+
+
+
+```{r}
+library(ggplot2)
+library(dplyr)
+plots %>%group_by(Age, No.show) %>%summarise(Count = n()) %>%
+   mutate(Freq = Count/sum(Count)*100) %>%
+   filter(No.show  == 'Yes' & Count >29) %>%
+   ggplot(aes(x = Age, y = Freq))+geom_point()+stat_smooth(method = 'loess')+geom_vline(xintercept = 18, linetype = 'longdash')+geom_vline(xintercept = 72, linetype ='longdash')+ggtitle('No-Show % by Age')+ylab('No-Show %')+theme_igray()
+```
+
+
+
+
+
+
+
+---
+```{r}
+library(ggplot2)
+ggplot(medical, aes(x=SMS_received, fill=No.show)) + geom_bar(position="fill")
+```
+
+
+
+
+---
+
+```{r}
+library(gglpot2)
+ggplot(plots,aes(x=Gender,y=No.show,fill=Gender)) + geom_bar(stat="identity")+ggtitle("No Show Rate by gender")
+
+```
+
+
+

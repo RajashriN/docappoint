@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Patient Show up prediction</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Patient Show up prediction">
+  <meta name="author" content="demo">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Patient Show up prediction</h1>
+    <h2></h2>
+    <p>demo<br/>Data Mining</p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <article data-timings="">
+    <ul>
+<li>/ &gt;1.Predictions using ML algorithms</li>
+<li>/ &gt;2.Data Visulaisation</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(caret)
+Train &lt;- createDataPartition(medical$SMS_received, p=0.7, list=FALSE)
+training &lt;- medical[ Train, ]
+testing &lt;- medical[ -Train, ]
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(caret)
+model1&lt;- train(No.show ~ Gender+Age+SMS_received, data = training,method = &quot;glm&quot;,family=&quot;binomial&quot;) 
+model1 
+</code></pre>
+
+<pre><code>## Generalized Linear Model 
+## 
+## 560 samples
+##   3 predictor
+##   2 classes: &#39;No&#39;, &#39;Yes&#39; 
+## 
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 560, 560, 560, 560, 560, 560, ... 
+## Resampling results:
+## 
+##   Accuracy   Kappa        
+##   0.7329971  -0.0003736974
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(caret)
+varImp(model1)##sms_received is having the highest score
+</code></pre>
+
+<pre><code>## glm variable importance
+## 
+##              Overall
+## Age           100.00
+## GenderM        30.58
+## SMS_received    0.00
+</code></pre>
+
+<pre><code class="r">pred = predict(model1, newdata=testing)
+confusionMatrix(data=pred, testing$No.show)
+</code></pre>
+
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction  No Yes
+##        No  162  77
+##        Yes   0   0
+##                                           
+##                Accuracy : 0.6778          
+##                  95% CI : (0.6145, 0.7366)
+##     No Information Rate : 0.6778          
+##     P-Value [Acc &gt; NIR] : 0.5308          
+##                                           
+##                   Kappa : 0               
+##  Mcnemar&#39;s Test P-Value : &lt;2e-16          
+##                                           
+##             Sensitivity : 1.0000          
+##             Specificity : 0.0000          
+##          Pos Pred Value : 0.6778          
+##          Neg Pred Value :    NaN          
+##              Prevalence : 0.6778          
+##          Detection Rate : 0.6778          
+##    Detection Prevalence : 1.0000          
+##       Balanced Accuracy : 0.5000          
+##                                           
+##        &#39;Positive&#39; Class : No              
+## 
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <article data-timings="">
+    <p>##Using Rpart</p>
+
+<pre><code class="r">library(rpart)
+model2&lt;-rpart(formula = No.show ~ Age +  Alcoholism + 
+        Scholarship +  SMS_received, data = training, method = &quot;class&quot;, maxdepth = 4, minsplit = 2, minbucket = 1, cp = -1)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(rpart)
+testPred &lt;- predict(model2, newdata = testing)
+predictability &lt;- sum(testPred == testing$No.show)/ length(testing$No.show)*100
+predictability
+</code></pre>
+
+<pre><code>## [1] 0
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-7" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(rpart)
+rpart.plot::rpart.plot(model2, type = 2, fallen.leaves = FALSE, extra = 4)
+</code></pre>
+
+<p><img src="assets/fig/unnamed-chunk-6-1.png" alt="plot of chunk unnamed-chunk-6"></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-8" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(MASS)
+library(nnet)
+library(caret)
+rdfit&lt;-train(No.show ~ SMS_received+Age+Gender,data = training,method = &quot;lda&quot;,family = &quot;binomial&quot;)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-9" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(caret)
+
+rdaClasses &lt;- predict(rdfit, newdata = testing)
+ confusionMatrix(rdaClasses, testing$No.show)
+</code></pre>
+
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction  No Yes
+##        No  162  77
+##        Yes   0   0
+##                                           
+##                Accuracy : 0.6778          
+##                  95% CI : (0.6145, 0.7366)
+##     No Information Rate : 0.6778          
+##     P-Value [Acc &gt; NIR] : 0.5308          
+##                                           
+##                   Kappa : 0               
+##  Mcnemar&#39;s Test P-Value : &lt;2e-16          
+##                                           
+##             Sensitivity : 1.0000          
+##             Specificity : 0.0000          
+##          Pos Pred Value : 0.6778          
+##          Neg Pred Value :    NaN          
+##              Prevalence : 0.6778          
+##          Detection Rate : 0.6778          
+##    Detection Prevalence : 1.0000          
+##       Balanced Accuracy : 0.5000          
+##                                           
+##        &#39;Positive&#39; Class : No              
+## 
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-10" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(caret)
+library(nnet)
+knn_model&lt;-train(No.show ~ SMS_received+Age+Handcap+Alcoholism,data = training,method = &quot;knn&quot;)
+knn_model
+</code></pre>
+
+<pre><code>## k-Nearest Neighbors 
+## 
+## 560 samples
+##   4 predictor
+##   2 classes: &#39;No&#39;, &#39;Yes&#39; 
+## 
+## No pre-processing
+## Resampling: Bootstrapped (25 reps) 
+## Summary of sample sizes: 560, 560, 560, 560, 560, 560, ... 
+## Resampling results across tuning parameters:
+## 
+##   k  Accuracy   Kappa     
+##   5  0.6893687  0.04187909
+##   7  0.7044385  0.05225761
+##   9  0.7056039  0.05015287
+## 
+## Accuracy was used to select the optimal model using  the largest value.
+## The final value used for the model was k = 9.
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-11" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(caret)
+ knnpred &lt;- predict(knn_model, newdata = testing)
+ confusionMatrix(knnpred, testing$No.show)
+</code></pre>
+
+<pre><code>## Confusion Matrix and Statistics
+## 
+##           Reference
+## Prediction  No Yes
+##        No  158  75
+##        Yes   4   2
+##                                           
+##                Accuracy : 0.6695          
+##                  95% CI : (0.6059, 0.7287)
+##     No Information Rate : 0.6778          
+##     P-Value [Acc &gt; NIR] : 0.638           
+##                                           
+##                   Kappa : 0.0017          
+##  Mcnemar&#39;s Test P-Value : 3.391e-15       
+##                                           
+##             Sensitivity : 0.97531         
+##             Specificity : 0.02597         
+##          Pos Pred Value : 0.67811         
+##          Neg Pred Value : 0.33333         
+##              Prevalence : 0.67782         
+##          Detection Rate : 0.66109         
+##    Detection Prevalence : 0.97490         
+##       Balanced Accuracy : 0.50064         
+##                                           
+##        &#39;Positive&#39; Class : No              
+## 
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-12" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(dplyr)
+library(ggthemes)
+library(ggplot2)
+##depending on the age and gender what is the status 
+ggplot(data = medical, aes(x = Age, colour = Gender))+
+   geom_density()+
+   geom_vline(xintercept = 16, linetype = &#39;longdash&#39;)+
+   geom_vline(xintercept = 68, linetype = &#39;longdash&#39;)+
+   theme_igray()+
+   ggtitle(&#39;Density of Age by Gender&#39;)
+</code></pre>
+
+<p><img src="assets/fig/unnamed-chunk-11-1.png" alt="plot of chunk unnamed-chunk-11"></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-13" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(ggplot2)
+library(dplyr)
+plots %&gt;%group_by(Age, No.show) %&gt;%summarise(Count = n()) %&gt;%
+   mutate(Freq = Count/sum(Count)*100) %&gt;%
+   filter(No.show  == &#39;Yes&#39; &amp; Count &gt;29) %&gt;%
+   ggplot(aes(x = Age, y = Freq))+geom_point()+stat_smooth(method = &#39;loess&#39;)+geom_vline(xintercept = 18, linetype = &#39;longdash&#39;)+geom_vline(xintercept = 72, linetype =&#39;longdash&#39;)+ggtitle(&#39;No-Show % by Age&#39;)+ylab(&#39;No-Show %&#39;)+theme_igray()
+</code></pre>
+
+<p><img src="assets/fig/unnamed-chunk-12-1.png" alt="plot of chunk unnamed-chunk-12"></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-14" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">library(ggplot2)
+ggplot(medical, aes(x=SMS_received, fill=No.show)) + geom_bar(position=&quot;fill&quot;)
+</code></pre>
+
+<p><img src="assets/fig/unnamed-chunk-13-1.png" alt="plot of chunk unnamed-chunk-13"></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-15" style="background:;">
+  <article data-timings="">
+    
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='NA'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='NA'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='NA'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='NA'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='NA'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='NA'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='NA'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='NA'>
+         8
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=9 title='NA'>
+         9
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=10 title='NA'>
+         10
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=11 title='NA'>
+         11
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=12 title='NA'>
+         12
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=13 title='NA'>
+         13
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=14 title='NA'>
+         14
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=15 title='NA'>
+         15
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>
